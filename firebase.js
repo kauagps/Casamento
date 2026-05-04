@@ -52,12 +52,11 @@
   }
 
   function getApprovedMessages() {
-    return db.collection('messages').where('approved', '==', true).orderBy('createdAt', 'desc').get();
-
+    return db.collection('messages').where('approved', '==', true).get();
   }
 
   function getAllMessages() {
-    return db.collection('messages').orderBy('createdAt', 'desc').get();
+    return db.collection('messages').get();
   }
 
   function approveMessage(id) {
@@ -68,21 +67,9 @@
     return db.collection('messages').doc(id).delete();
   }
 
-  // Códigos
+  // Códigos (mantido apenas para admin legado)
   function getInviteCodes() {
     return db.collection('inviteCodes').get();
-  }
-
-  function validateCode(code) {
-    return db.collection('inviteCodes').where('code', '==', code).where('used', '==', false).get();
-  }
-
-  function markCodeUsed(codeId, usedBy) {
-    return db.collection('inviteCodes').doc(codeId).update({
-      used: true,
-      usedBy: usedBy,
-      usedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
   }
 
   function addInviteCode(data) {
@@ -98,7 +85,7 @@
   window.firestoreHelpers = {
     getConfig, getRaffleNumbers, updateRaffleNumber,
     addMessage, getApprovedMessages, getAllMessages, approveMessage, deleteMessage,
-    getInviteCodes, validateCode, markCodeUsed, addInviteCode
+    getInviteCodes, addInviteCode
   };
 
   window.firebaseReady = true;

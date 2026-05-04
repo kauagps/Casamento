@@ -80,23 +80,36 @@
       return window.firestoreHelpers.updateRaffleNumber(num, data).then(updateGridVisual);
     },
     renderAdmin: (container) => {
-      container.innerHTML = '<h3>Rifa — 1 a 100</h3><div class="raffle-grid" style="max-width:100%">';
-      const adminGrid = container.querySelector('.raffle-grid');
+      container.innerHTML = '<h3>Rifa — 1 a 100</h3>';
+      const adminGrid = document.createElement('div');
+      adminGrid.className = 'raffle-grid';
+      adminGrid.style.maxWidth = '100%';
+
       for (let i = 1; i <= TOTAL; i++) {
-        const data = raffleState[i] || {};
         const btn = document.createElement('button');
         btn.textContent = i;
-        btn.style.cssText = data.sold
+        const isSold = raffleState[i] && raffleState[i].sold;
+        btn.style.cssText = isSold
           ? 'background:var(--primary);color:#fff;border:1px solid var(--primary);padding:4px;cursor:pointer'
           : 'background:#fff;color:var(--primary);border:1px solid var(--primary);padding:4px;cursor:pointer';
-        btn.onclick = () => {
-          const name = data.sold ? '' : prompt('Nome do comprador:');
-          if (data.sold) window.adminRaffle.markAvailable(i);
-          else if (name !== null) window.adminRaffle.markSold(i, name);
-        };
+        btn.onclick = (function(num) {
+          return function() {
+            const currentData = raffleState[num] || {};
+            if (currentData.sold) {
+              if (confirm('Deseja marcar como disponível novamente?')) {
+                window.adminRaffle.markAvailable(num);
+              }
+            } else {
+              const name = prompt('Nome do comprador:');
+              if (name !== null && name.trim()) {
+                window.adminRaffle.markSold(num, name.trim());
+              }
+            }
+          };
+        })(i);
         adminGrid.appendChild(btn);
       }
-      container.innerHTML += '</div>';
+      container.appendChild(adminGrid);
     }
   };
 

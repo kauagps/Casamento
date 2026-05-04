@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Popular Firestore — Casamento</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f0eb; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .card { background: #fff; border-radius: 8px; padding: 30px 40px; max-width: 420px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    h1 { font-size: 1.3rem; margin-bottom: 6px; color: #540505; }
+    p { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: #555; }
+    pre { background: #f0f0f0; padding: 10px; border-radius: 4px; font-size: 0.7rem; overflow-x: auto; margin-bottom: 15px; white-space: pre-wrap; word-break: break-all; }
+    .btn { display: block; width: 100%; padding: 12px; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; margin-bottom: 10px; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #540505; color: #fff; }
+    .btn-secondary { background: #b8860b; color: #fff; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #log { margin-top: 15px; font-size: 0.8rem; max-height: 200px; overflow-y: auto; }
+    .log-item { padding: 4px 0; border-bottom: 1px solid #eee; }
+    .ok { color: #2e7d32; }
+    .err { color: #c62828; }
+    .info { color: #1565c0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Popular Firestore</h1>
+    <p>Cole o firebaseConfig abaixo e clique nos botões na ordem.</p>
+
+    <label>firebaseConfig</label>
+    <pre id="config-editor">{
+  "apiKey": "AIzaSyAR-2ktvSSJ_S_zkQ9DBiXhUzfjZJ954Lo",
+  "authDomain": "convite-de-casamento-cd5a3.firebaseapp.com",
+  "projectId": "convite-de-casamento-cd5a3",
+  "storageBucket": "convite-de-casamento-cd5a3.firebasestorage.app",
+  "messagingSenderId": "267776276329",
+  "appId": "1:267776276329:web:f6ec61ff3d2318e1af2ff8"
+}</pre>
+    <button class="btn btn-secondary" onclick="editConfig()">Editar Config</button>
+
+    <button class="btn btn-primary" id="btn-init" onclick="initFirebase()">1. Conectar ao Firebase</button>
+    <button class="btn btn-primary" id="btn-config" onclick="createConfig()" disabled>2. Criar Config + Código Compartilhado</button>
+    <button class="btn btn-primary" id="btn-raffle" onclick="createRaffle()" disabled>3. Criar 100 Números da Rifa</button>
+
+    <div id="log"></div>
+  </div>
+
+  <script>
+    let db = null;
+
+    function log(msg, type) {
+      const el = document.getElementById('log');
+      const div = document.createElement('div');
+      div.className = 'log-item ' + (type || '');
+      div.textContent = msg;
+      el.prepend(div);
+    }
+
+    function editConfig() {
+      const current = document.getElementById('config-editor').textContent;
+      const edited = prompt('Edite o firebaseConfig (JSON válido):', current);
+      if (edited) {
+        try {
+          JSON.parse(edited);
+          document.getElementById('config-editor').textContent = edited;
+          log('Config atualizado no editor', 'info');
+        } catch(e) {
+          alert('JSON inválido: ' + e.message);
+        }
+      }
+    }
+
+    function initFirebase() {
+      try {
+        const config = JSON.parse(document.getElementById('config-editor').textContent);
+        firebase.initializeApp(config);
+        db = firebase.firestore();
+        document.getElementById('btn-init').disabled = true;
+        document.getElementById('btn-config').disabled = false;
+        document.getElementById('btn-raffle').disabled = false;
+        log('✅ Conectado ao Firebase!', 'ok');
+      } catch(e) {
+        log('❌ Erro: ' + e.message, 'err');
+      }
+    }
+
+    async function createConfig() {
+      if (!db) return;
+      try {
+        await db.collection('config').doc('wedding').set({
+          date: '2026-05-16',
+          time: '19:00',
+          location: 'Igreja Presbiteriana do Placas, R. Joaquim M Macedo, 1980, São Francisco, Rio Branco, AC',
+          mapUrl: 'https://maps.app.goo.gl/whAXyAxHRZ7f1kZV6',
+          sharedCode: 'CASAMENTO2026',
+          adminPassword: 'kauaana2026'
+        });
+        log('✅ Config criada (código: CASAMENTO2026)', 'ok');
+      } catch(e) {
+        log('❌ Config: ' + e.message, 'err');
+      }
+    }
+
+    async function createRaffle() {
+      if (!db) return;
+      const btn = document.getElementById('btn-raffle');
+      btn.disabled = true;
+      btn.textContent = 'Criando...';
+      log('Criando 100 números da rifa...', 'info');
+
+      const batch = db.batch();
+      for (let i = 1; i <= 100; i++) {
+        const ref = db.collection('raffle').doc('numbers').collection('items').doc(String(i));
+        batch.set(ref, { number: i, sold: false, buyerName: '', buyerPhone: '', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      }
+      try {
+        await batch.commit();
+        log('✅ 100 números da rifa criados!', 'ok');
+        btn.textContent = '3. Criar 100 Números da Rifa (Feito ✓)';
+      } catch(e) {
+        log('❌ Rifa: ' + e.message, 'err');
+        btn.disabled = false;
+        btn.textContent = '3. Criar 100 Números da Rifa';
+      }
+    }
+  </script>
+</body>
+</html>

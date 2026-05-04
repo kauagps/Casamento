@@ -1,11 +1,12 @@
 /* ============================================
-   admin.js — Painel Admin (senha hardcoded)
+   admin.js — Painel Admin (senha via Firestore)
    ============================================ */
 
 (function () {
   'use strict';
 
-  const ADMIN_PASSWORD = 'kauaana2026'; // ⚠️ Alterar em produção
+  const ADMIN_PASSWORD_FALLBACK = 'kauaana2026'; // usado se não houver no Firestore
+  let adminPassword = ADMIN_PASSWORD_FALLBACK;
 
   const panel = document.getElementById('admin-panel');
   const loginDiv = document.getElementById('admin-login');
@@ -15,6 +16,14 @@
   const passwordInput = document.getElementById('admin-password');
 
   window.initAdmin = function () {
+    // Carrega senha do Firestore
+    if (window.firestoreHelpers) {
+      window.firestoreHelpers.getConfig().then(doc => {
+        if (doc.exists && doc.data().adminPassword) {
+          adminPassword = doc.data().adminPassword;
+        }
+      }).catch(() => {});
+    }
     // Verifica se deve abrir via URL
     const params = new URLSearchParams(window.location.search);
     if (params.get('admin') === 'true') {
@@ -23,7 +32,7 @@
   };
 
   loginBtn.addEventListener('click', () => {
-    if (passwordInput.value === ADMIN_PASSWORD) {
+    if (passwordInput.value === adminPassword) {
       loginDiv.style.display = 'none';
       dashboard.style.display = 'block';
       renderAdminTabs();
@@ -54,7 +63,6 @@
         // Renderiza conteúdo
         if (tab.dataset.tab === 'raffle' && window.adminRaffle) window.adminRaffle.renderAdmin(target);
         if (tab.dataset.tab === 'messages' && window.adminMessages) window.adminMessages.renderAdmin(target);
-        if (tab.dataset.tab === 'codes') renderCodesTab(target);
         if (tab.dataset.tab === 'config') renderConfigTab(target);
       });
     });
@@ -64,41 +72,6 @@
     if (firstTab) firstTab.click();
   }
 
-  function renderCodesTab(container) {
-    container.innerHTML = `
-      <h3>Códigos de Convite</h3>
-      <button class="btn" onclick="window.adminCodes.generateBatch()">Gerar Lote (10)</button>
-      <div id="codes-list" style="margin-top:10px"></div>
-    `;
-    window.adminCodes = {
-      generateBatch: () => {
-        const batch = [];
-        for (let i = 0; i < 10; i++) {
-          const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-          batch.push(window.firestoreHelpers.addInviteCode({ code }));
-        }
-        Promise.all(batch).then(() => {
-          alert('Lote gerado!');
-          renderCodesTab(container);
-        });
-      }
-    };
-
-    if (window.firestoreHelpers) {
-      window.firestoreHelpers.getInviteCodes().then(snapshot => {
-        const list = document.getElementById('codes-list');
-        list.innerHTML = '';
-        snapshot.forEach(doc => {
-          const c = doc.data();
-          const div = document.createElement('div');
-          div.style.cssText = 'border:1px solid var(--border);padding:8px;margin:3px 0;font-size:0.9rem';
-          div.textContent = `${c.code} — ${c.used ? 'Usado por ' + (c.usedBy || '?') : 'Disponível'}`;
-          list.appendChild(div);
-        });
-      });
-    }
-  }
-
   function renderConfigTab(container) {
     container.innerHTML = `
       <h3>Configurações</h3>
@@ -106,6 +79,8 @@
       <input type="text" id="cfg-date" placeholder="Data (2026-05-16T19:00)">
       <input type="text" id="cfg-whatsapp" placeholder="WhatsApp (5568992812731)">
       <input type="text" id="cfg-havan" placeholder="Link Havan">
+      <input type="text" id="cfg-sharedcode" placeholder="Código compartilhado (CASAMENTO2026)">
+      <input type="password" id="cfg-password" placeholder="Nova senha admin (deixe em branco para manter)">
       <button class="btn" onclick="window.adminSaveConfig()">Salvar</button>
     `;
 
@@ -114,13 +89,22 @@
       const date = document.getElementById('cfg-date').value;
       const whatsapp = document.getElementById('cfg-whatsapp').value;
       const havan = document.getElementById('cfg-havan').value;
+      const password = document.getElementById('cfg-password').value;
+      const sharedCode = document.getElementById('cfg-sharedcode').value;
 
-      window.db.collection('config').doc('wedding').set({
+      const data = {
         couplePhotoUrl: photo,
         weddingDate: date,
         whatsappNumber: whatsapp,
         havanListUrl: havan
-      }, { merge: true }).then(() => alert('Config salva!'));
+      };
+      if (password) data.adminPassword = password;
+      if (sharedCode) data.sharedCode = sharedCode;
+
+      window.db.collection('config').doc('wedding').set(data, { merge: true }).then(() => {
+        if (password) adminPassword = password;
+        alert('Config salva!');
+      });
     };
 
     // Carrega valores atuais
@@ -132,6 +116,7 @@
           if (d.weddingDate) document.getElementById('cfg-date').value = d.weddingDate;
           if (d.whatsappNumber) document.getElementById('cfg-whatsapp').value = d.whatsappNumber;
           if (d.havanListUrl) document.getElementById('cfg-havan').value = d.havanListUrl;
+          if (d.sharedCode) document.getElementById('cfg-sharedcode').value = d.sharedCode;
         }
       });
     }
