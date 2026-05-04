@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kauã & Ana — Casamento</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Belleza&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- Firebase v9 CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Ornamento SVG global (cantos) -->
+  <svg id="ornament-template" style="display:none">
+    <symbol id="corner-ornament" viewBox="0 0 100 100">
+      <path d="M5,5 Q30,5 40,20 Q50,35 35,50 Q20,65 5,70" stroke="currentColor" stroke-width="1.5" fill="none"/>
+      <path d="M5,5 Q5,30 20,40 Q35,50 50,35 Q65,20 70,5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    </symbol>
+  </svg>
+
+  <!-- Navegação Lateral -->
+  <nav id="section-nav" class="section-nav">
+    <ul>
+      <li><button class="nav-dot active" data-index="0"><span class="nav-tooltip">Início</span></button></li>
+      <li><button class="nav-dot" data-index="1"><span class="nav-tooltip">Contagem</span></button></li>
+      <li><button class="nav-dot" data-index="2"><span class="nav-tooltip">Presentes</span></button></li>
+      <li><button class="nav-dot" data-index="3"><span class="nav-tooltip">Rifa</span></button></li>
+      <li><button class="nav-dot" data-index="4"><span class="nav-tooltip">Mensagens</span></button></li>
+    </ul>
+  </nav>
+
+  <!-- ===== SEÇÃO 1 — HERO ===== -->
+  <section id="hero" class="section">
+    <div class="ornament ornament-tl"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-tr"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-bl"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-br"><svg><use href="#corner-ornament"/></svg></div>
+
+    <div class="hero-content">
+      <div class="hero-photo-wrapper">
+        <img id="hero-photo" src="assets/Casal/Foto do Casal.png" alt="Kauã & Ana">
+      </div>
+      <h1 class="couple-names">Kauã Gabriel<br>&<br>Ana Heloisa</h1>
+      <p class="hero-invite">Você é convidado para celebrar<br>nosso amor e união</p>
+      <div class="scroll-hint">↓</div>
+    </div>
+  </section>
+
+  <!-- ===== SEÇÃO 2 — CONTAGEM REGRESSIVA ===== -->
+  <section id="countdown" class="section">
+    <div class="ornament ornament-tl"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-tr"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-bl"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-br"><svg><use href="#corner-ornament"/></svg></div>
+
+    <div class="section-content">
+      <h2 class="section-title">Contagem Regressiva</h2>
+      <div class="divider">
+        <span class="divider-line"></span>
+        <span class="divider-icon">◆</span>
+        <span class="divider-line"></span>
+      </div>
+
+      <div id="countdown-timer" class="countdown-grid">
+        <div class="countdown-card">
+          <span class="countdown-number" id="cd-days">--</span>
+          <span class="countdown-label">Dias</span>
+        </div>
+        <div class="countdown-card">
+          <span class="countdown-number" id="cd-hours">--</span>
+          <span class="countdown-label">Horas</span>
+        </div>
+        <div class="countdown-card">
+          <span class="countdown-number" id="cd-minutes">--</span>
+          <span class="countdown-label">Minutos</span>
+        </div>
+        <div class="countdown-card">
+          <span class="countdown-number" id="cd-seconds">--</span>
+          <span class="countdown-label">Segundos</span>
+        </div>
+      </div>
+
+      <p class="countdown-date">16 de maio de 2026, às 19h</p>
+
+      <div id="countdown-done" class="countdown-done" style="display:none">
+        Hoje é o grande dia! 🎉
+      </div>
+
+      <div class="location-block">
+        <h3 class="location-title">Local da Cerimônia</h3>
+        <p class="location-text">
+          Igreja Presbiteriana do Placas<br>
+          R. Joaquim M Macedo, 1980<br>
+          São Francisco, Rio Branco, AC
+        </p>
+        <a id="map-btn" href="https://maps.app.goo.gl/whAXyAxHRZ7f1kZV6" target="_blank" class="btn">Ver no Mapa</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SEÇÃO 3 — PRESENTES ===== -->
+  <section id="gifts" class="section">
+    <div class="ornament ornament-tl"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-tr"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-bl"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-br"><svg><use href="#corner-ornament"/></svg></div>
+
+    <div class="section-content">
+      <h2 class="section-title">Presentes</h2>
+      <div class="divider">
+        <span class="divider-line"></span>
+        <span class="divider-icon">◆</span>
+        <span class="divider-line"></span>
+      </div>
+
+      <p class="gifts-text">
+        Sua presença é o nosso maior presente.<br>
+        Mas se desejar nos presentear,<br>
+        preparamos uma lista especial na Havan.
+      </p>
+      <a id="havan-link" href="https://lista.havan.com.br/Convidado/ItensListaPresente/924579" target="_blank" class="btn">Lista de Presentes</a>
+    </div>
+  </section>
+
+  <!-- ===== SEÇÃO 4 — RIFA ===== -->
+  <section id="raffle" class="section">
+    <div class="ornament ornament-tl"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-tr"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-bl"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-br"><svg><use href="#corner-ornament"/></svg></div>
+
+    <div class="section-content">
+      <h2 class="section-title">Rifa Beneficente</h2>
+      <div class="divider">
+        <span class="divider-line"></span>
+        <span class="divider-icon">◆</span>
+        <span class="divider-line"></span>
+      </div>
+
+      <div class="raffle-info">
+        <p>Prêmio: <strong>R$ 300,00</strong></p>
+        <p>Chave PIX: <strong>68992812731</strong></p>
+      </div>
+
+      <div id="raffle-grid" class="raffle-grid"></div>
+
+      <a id="raffle-whatsapp" href="#" class="btn">Comprar pelo WhatsApp</a>
+    </div>
+  </section>
+
+  <!-- ===== SEÇÃO 5 — MENSAGENS ===== -->
+  <section id="messages" class="section">
+    <div class="ornament ornament-tl"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-tr"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-bl"><svg><use href="#corner-ornament"/></svg></div>
+    <div class="ornament ornament-br"><svg><use href="#corner-ornament"/></svg></div>
+
+    <div class="section-content">
+      <h2 class="section-title">Mensagens</h2>
+      <div class="divider">
+        <span class="divider-line"></span>
+        <span class="divider-icon">◆</span>
+        <span class="divider-line"></span>
+      </div>
+
+      <form id="message-form" class="message-form">
+        <input type="text" id="msg-code" placeholder="Código do convite" required>
+        <input type="text" id="msg-name" placeholder="Seu nome" required>
+        <textarea id="msg-text" placeholder="Sua mensagem (máx 300 caracteres)" maxlength="300" required></textarea>
+        <button type="submit" class="btn">Enviar Mensagem</button>
+      </form>
+
+      <div id="message-carousel" class="message-carousel">
+        <div class="carousel-track"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PAINEL ADMIN ===== -->
+  <div id="admin-panel" class="admin-panel" style="display:none">
+    <div class="admin-content">
+      <h2>Painel Admin</h2>
+      <div id="admin-login">
+        <input type="password" id="admin-password" placeholder="Senha">
+        <button id="admin-login-btn" class="btn">Entrar</button>
+      </div>
+      <div id="admin-dashboard" style="display:none">
+        <nav class="admin-tabs">
+          <button data-tab="raffle" class="active">Rifa</button>
+          <button data-tab="messages">Mensagens</button>
+          <button data-tab="codes">Códigos</button>
+          <button data-tab="config">Config</button>
+        </nav>
+        <div id="admin-tab-raffle" class="admin-tab-content"></div>
+        <div id="admin-tab-messages" class="admin-tab-content" style="display:none"></div>
+        <div id="admin-tab-codes" class="admin-tab-content" style="display:none"></div>
+        <div id="admin-tab-config" class="admin-tab-content" style="display:none"></div>
+        <button id="admin-logout" class="btn">Sair</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="firebase.js"></script>
+  <script src="countdown.js"></script>
+  <script src="raffle.js"></script>
+  <script src="messages.js"></script>
+  <script src="admin.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
